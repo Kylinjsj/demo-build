@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Pages 部署 Demo</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      max-width: 760px;
+      margin: 40px auto;
+      padding: 0 16px;
+      line-height: 1.7;
+      color: #1f2937;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin-top: 32px;
+      font-size: 18px;
+    }
+
+    p {
+      color: #444;
+    }
+
+    code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.92em;
+    }
+
+    ol li {
+      margin-bottom: 8px;
+    }
+
+    .card {
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fafafa;
+      margin: 20px 0;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      padding: 4px 0;
+    }
+
+    .row span:first-child {
+      color: #6b7280;
+      min-width: 96px;
+    }
+
+    .row span:last-child {
+      word-break: break-all;
+    }
+
+    .ok {
+      color: #15803d;
+      font-weight: 600;
+    }
+
+    .warn {
+      color: #b45309;
+      font-weight: 600;
+    }
+
+    pre {
+      padding: 16px;
+      border-radius: 10px;
+      background: #111827;
+      color: #e5e7eb;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .big {
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>GitHub Pages 部署 Demo</h1>
+  <p>
+    这个页面由 <strong>GitHub Pages</strong> 托管。
+    没有 Node、没有构建命令、没有 Cloudflare Functions，
+    就是仓库根目录下一个普通的 <code>index.html</code>，被 GitHub 原样发出来。
+  </p>
+
+  <div class="card">
+    <div class="row">
+      <span>部署状态</span>
+      <span id="host" class="big">判断中...</span>
+    </div>
+    <div class="row">
+      <span>当前地址</span>
+      <span id="url">读取中...</span>
+    </div>
+    <div class="row">
+      <span>页面加载时间</span>
+      <span id="time">-</span>
+    </div>
+  </div>
+
+  <h2>这是怎么部署上去的</h2>
+  <ol>
+    <li>把 <code>index.html</code> 推送到 <code>main</code> 分支</li>
+    <li>打开仓库的 <code>Settings</code> → <code>Pages</code></li>
+    <li>Source 选 <code>Deploy from a branch</code></li>
+    <li>Branch 选 <code>main</code>，目录选 <code>/ (root)</code></li>
+    <li>点 <code>Save</code>，等 1 分钟左右</li>
+    <li>顶部出现 <code>https://用户名.github.io/demo-build/</code></li>
+  </ol>
+  <p>
+    之后每次 <code>git push</code>，GitHub 都会自动重新发布一遍，不用再点任何按钮。
+  </p>
+
+  <h2>目录可以放哪</h2>
+  <p>
+    <code>Deploy from a branch</code> 模式下，GitHub 只允许两个位置：
+  </p>
+  <ul>
+    <li><code>/</code> —— 仓库根目录（这次用的就是这个）</li>
+    <li><code>/docs</code> —— 根目录下名为 docs 的文件夹</li>
+  </ul>
+  <p>
+    除此之外的名字，比如 <code>public</code>、<code>dist</code>、<code>build</code>，
+    在分支部署模式下<strong>选不了</strong>。
+    想让构建产物放别的目录，就得改用 GitHub Actions 来发布。
+  </p>
+
+  <h2>和 Cloudflare Pages 的区别</h2>
+  <pre>GitHub Pages    = 纯静态文件托管
+                  不能写后端接口，不能读环境变量
+                  push → 自动发布
+
+Cloudflare Pages = 静态文件 + functions/ 里的后端
+                  能读 context.env.XXX，能连 KV / D1
+                  push → 自动发布</pre>
+  <p>
+    之前在 <code>cf_demo</code> 里写的 <code>/api/site</code>、<code>/api/counter</code>
+    这些接口，在 GitHub Pages 上是跑不起来的，因为那边只有静态文件服务器。
+  </p>
+
+  <script>
+    document.getElementById("url").textContent = location.href;
+    document.getElementById("time").textContent = new Date().toLocaleString();
+
+    const hostEl = document.getElementById("host");
+    if (location.hostname.endsWith("github.io")) {
+      hostEl.textContent = "已部署 ✅ GitHub Pages";
+      hostEl.className = "ok big";
+    } else if (location.protocol === "file:") {
+      hostEl.textContent = "⚠️ 本地文件（还没部署）";
+      hostEl.className = "warn big";
+    } else {
+      hostEl.textContent = "⚠️ 本地服务器（还没部署）";
+      hostEl.className = "warn big";
+    }
+  </script>
+</body>
+</html>
